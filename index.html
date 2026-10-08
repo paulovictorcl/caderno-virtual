@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caderno Virtual de Aulas</title>
+  
+<style>
+    :root {
+      --accent: #22d3ee;
+      --accent-hover: #67e8f9;
+      --accent-contrast: #0d1417;
+      --bg-body: #0d1417;
+      --bg-panel: #121a1e;
+      --bg-panel-alt: #161f24;
+      --bg-code: #0a0f0c;
+      --border-color: #2a352d;
+      --text-main: #e8f0ea;
+      --text-muted: #8fa195;
+      --text-cyan: #22d3ee;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --success: #4ade80;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    button {
+      font-weight: 500;
+      font-family: inherit;
+    }
+
+    /* === SIDEBAR === */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--bg-panel);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-cyan);
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .save-indicator {
+      font-size: 12px;
+      color: var(--success);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      font-weight: 500;
+    }
+    .save-indicator.visible {
+      opacity: 1;
+    }
+
+    .search-box {
+      position: relative;
+      margin-top: 4px;
+    }
+
+    .search-input {
+      width: 100%;
+      background-color: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px 8px 32px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 13px;
+    }
+
+    .sidebar-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 8px;
+    }
+
+    .sidebar-footer {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background-color: var(--bg-panel);
+    }
+
+    .btn-new-disc {
+      width: 100%;
+      background-color: transparent;
+      border: 1px dashed var(--accent);
+      color: var(--accent);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .btn-new-disc:hover {
+      background-color: rgba(34, 211, 238, 0.1);
+      color: var(--accent-hover);
+    }
+
+    .sidebar-tools-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-tool {
+      flex: 1;
+      background: var(--bg-panel-alt);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .btn-tool:hover {
+      color: var(--text-main);
+      border-color: var(--accent);
+    }
+
+    /* Disciplina and Tópico Tree Items */
+    .disc-group {
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background-color: rgba(22, 31, 36, 0.4);
+      border: 1px solid rgba(42, 53, 45, 0.6);
+      overflow: hidden;
+    }
+
+    .disc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background-color: var(--bg-panel-alt);
+      border-bottom: 1px solid rgba(42, 53, 45, 0.4);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .disc-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .disc-toggle {
+      font-size: 10px;
+      color: var(--text-muted);
+      width: 14px;
+      text-align: center;
+    }
+
+    .disc-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      opacity: 0.25;
+      transition: opacity 0.2s;
+    }
+    .disc-header:hover .item-actions,
+    .topico-item:hover .item-actions {
+      opacity: 1;
+    }
+
+    .btn-action-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      line-height: 1;
+      padding: 0;
+      transition: all 0.15s;
+    }
+    .btn-action-icon:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+    .btn-action-icon.danger:hover {
+      background: rgba(248, 113, 113, 0.2);
+      color: var(--danger);
+    }
+
+    .disc-topics {
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .topico-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .topico-item:hover {
+      background: rgba(34, 211, 238, 0.08);
+      color: var(--text-main);
+    }
+    .topico-item.active {
+      background: rgba(34, 211, 238, 0.16);
+      color: var(--text-cyan);
+      font-weight: 500;
+      border-left: 3px solid var(--accent);
+    }
+
+    .topico-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .btn-ghost-topico {
+      width: 100%;
+      background: transparent;
+      border: 1px dashed rgba(34, 211, 238, 0.4);
+      color: var(--text-cyan);
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 4px;
+      text-align: center;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost-topico:hover {
+      background: rgba(34, 211, 238, 0.1);
+      border-color: var(--accent);
+    }
+
+    /* === MAIN CONTENT === */
+    .main {
+      flex: 1;
+      min-width: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-body);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-container {
+      max-width: 980px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 28px 80px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-title {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--border-color);
+      color: var(--text-main);
+      font-size: 26px;
+      font-weight: 600;
+      padding: 6px 0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-title:focus {
+      border-bottom-color: var(--accent);
+    }
+
+    .textarea-general {
+      width: 100%;
+      min-height: 140px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-main);
+      padding: 12px 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .textarea-general:focus {
+      border-color: var(--accent);
+    }
+
+    /* Section Funções & Comandos */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-top: 10px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-add-func {
+      background-color: var(--bg-panel-alt);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-add-func:hover {
+      background-color: var(--accent);
+      color: var(--accent-contrast);
+    }
+
+    /* Cards de Função */
+    .func-card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .func-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(42, 53, 45, 0.7);
+      padding-bottom: 10px;
+    }
+
+    .func-card-tag {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: rgba(34, 211, 238, 0.12);
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .func-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .input-func-text {
+      width: 100%;
+      background-color: var(--bg-panel-alt);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      padding: 8px 12px;
+      font-size: 15px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .input-func-text:focus {
+      border-color: var(--accent);
+    }
+
+    .input-mono {
+      font-family: inherit;
+      color: #93c5fd;
+    }
+
+    .textarea-detalhes {
+      width: 100%;
+      min-height: 80px;
+      background-color: var(--bg-panel-alt);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      padding: 8px 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .textarea-detalhes:focus {
+      border-color: var(--accent);
+    }
+
+    /* Bloco de Código */
+    .code-block-wrapper {
+      background-color: var(--bg-code);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background-color: rgba(22, 31, 36, 0.9);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .code-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .code-lang-select {
+      background-color: var(--bg-code);
+      border: 1px solid var(--border-color);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    .code-lang-select option {
+      background-color: var(--bg-panel);
+      color: var(--text-main);
+    }
+
+    .code-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .pill-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .pill-btn.btn-run {
+      background: rgba(34, 211, 238, 0.12);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .pill-btn.btn-run:hover {
+      background: var(--accent);
+      color: var(--accent-contrast);
+    }
+
+    /* Code editor with layered highlight */
+    .editor-container {
+      position: relative;
+      min-height: 110px;
+      width: 100%;
+      background-color: var(--bg-code);
+    }
+
+    .code-highlight-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      margin: 0;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      tab-size: 4;
+      overflow: hidden;
+      color: #cbd5e1;
+      background: transparent;
+      border: none;
+      box-sizing: border-box;
+    }
+
+    .code-textarea {
+      position: relative;
+      width: 100%;
+      min-height: 110px;
+      margin: 0;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      tab-size: 4;
+      color: transparent;
+      caret-color: #22d3ee;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: vertical;
+      overflow-y: auto;
+      box-sizing: border-box;
+      display: block;
+    }
+
+    /* Output Console */
+    .output-panel {
+      border-top: 1px dashed var(--border-color);
+      background-color: #050806;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .output-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .output-content {
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .output-content.error {
+      color: #fca5a5;
+    }
+    .output-content.success {
+      color: #86efac;
+    }
+
+    /* Table output for SQL */
+    .sql-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 13px;
+    }
+    .sql-table th {
+      background-color: rgba(34, 211, 238, 0.15);
+      color: var(--accent);
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .sql-table td {
+      border: 1px solid var(--border-color);
+      padding: 5px 10px;
+      color: #f1f5f9;
+    }
+    .sql-table tr:nth-child(even) td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Syntax Tokens */
+    .syn-kw { color: #22d3ee; }
+    .syn-str { color: #a5e075; }
+    .syn-num { color: #f78c6c; }
+    .syn-com { color: #5c6b70; }
+    .syn-fn { color: #82aaff; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .empty-state-icon {
+      font-size: 40px;
+      opacity: 0.6;
+    }
+
+    /* Search match badge */
+    .search-badge {
+      font-size: 11px;
+      background: rgba(34, 211, 238, 0.2);
+      color: var(--text-cyan);
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: 6px;
+    }
+
+    /* Documento de estudo: fica oculto no app e aparece somente na exportação. */
+    .print-document {
+      display: none;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-pdf {
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-main);
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    }
+
+    .btn-pdf:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.08);
+    }
+
+    .btn-pdf svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Folha A4 dedicada. Todo o CSS permanece estático neste único <style>. */
+    @media print {
+      @page {
+        size: A4;
+        margin: 13mm 14mm 15mm;
+      }
+
+      html,
+      body {
+        display: block;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        background: #ffffff !important;
+        color: #1b2420 !important;
+        color-scheme: light;
+        font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        font-size: 9.5pt;
+        line-height: 1.48;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .sidebar,
+      .main,
+      .toast {
+        display: none !important;
+      }
+
+      .print-document {
+        display: block !important;
+        width: 100%;
+        max-width: none;
+        color: #1b2420;
+        orphans: 3;
+        widows: 3;
+      }
+
+      .print-header {
+        padding-bottom: 5mm;
+        margin-bottom: 6mm;
+        border-bottom: 1pt solid #13899a;
+      }
+
+      .print-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8mm;
+        margin-bottom: 3mm;
+        color: #5a6862;
+        font-size: 7.5pt;
+      }
+
+      .print-brand {
+        color: #087486;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .print-title {
+        margin: 0 0 2.5mm;
+        max-width: none;
+        color: #101713;
+        font-size: 22pt;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        overflow-wrap: break-word;
+        text-wrap: balance;
+      }
+
+      .print-course {
+        margin: 0;
+        color: #53605a;
+        font-size: 9pt;
+      }
+
+      .print-section {
+        margin: 0 0 6mm;
+      }
+
+      .print-section-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 6mm;
+        margin: 0 0 3.5mm;
+        padding-bottom: 2mm;
+        border-bottom: 0.75pt solid #c8d2cd;
+        break-after: avoid;
+      }
+
+      .print-section-title {
+        margin: 0;
+        color: #17211c;
+        font-size: 12pt;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .print-section-count {
+        color: #68756f;
+        font-size: 7.5pt;
+      }
+
+      .print-notes,
+      .print-detail,
+      .print-purpose {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .print-empty {
+        color: #68756f;
+        font-style: italic;
+      }
+
+      .print-function {
+        margin: 0;
+        padding: 4.5mm 0;
+        border-bottom: 0.75pt solid #d3dbd7;
+        break-inside: auto;
+      }
+
+      .print-function:first-child {
+        padding-top: 0;
+      }
+
+      .print-function:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      .print-function-header {
+        display: grid;
+        grid-template-columns: 7mm 1fr;
+        gap: 3mm;
+        align-items: start;
+        margin-bottom: 2.5mm;
+        break-after: avoid;
+      }
+
+      .print-function-number {
+        padding-top: 0.7mm;
+        color: #0b7c8c;
+        font-size: 8pt;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .print-function-title {
+        margin: 0 0 0.8mm;
+        color: #101713;
+        font-size: 13pt;
+        line-height: 1.2;
+        overflow-wrap: break-word;
+      }
+
+      .print-purpose {
+        color: #49554f;
+        font-size: 9pt;
+      }
+
+      .print-function-body {
+        margin-left: 10mm;
+      }
+
+      .print-row {
+        display: grid;
+        grid-template-columns: 22mm 1fr;
+        gap: 3mm;
+        align-items: start;
+        padding: 2.2mm 0;
+        border-top: 0.5pt solid #e0e6e3;
+        break-inside: avoid;
+      }
+
+      .print-label {
+        display: block;
+        padding-top: 0.7mm;
+        color: #66736d;
+        font-size: 7pt;
+        font-weight: 600;
+        letter-spacing: 0.045em;
+        text-transform: uppercase;
+      }
+
+      .print-syntax,
+      .print-code {
+        margin: 0;
+        background: #f2f6f4 !important;
+        color: #17231d;
+        font-family: Consolas, 'Courier New', monospace;
+        font-size: 8.2pt;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .print-syntax {
+        padding: 2mm 2.5mm;
+        border-radius: 1.5mm;
+      }
+
+      .print-code-block {
+        margin: 2.5mm 0 0 10mm;
+        break-inside: avoid-page;
+      }
+
+      .print-code-header {
+        margin-bottom: 1mm;
+        color: #5e6b65;
+        font-size: 7pt;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .print-code {
+        padding: 2.5mm 3mm;
+        border-top: 0.75pt solid #cbd5d0;
+        border-bottom: 0.75pt solid #cbd5d0;
+      }
+
+      .print-footer {
+        margin-top: 7mm;
+        padding-top: 3mm;
+        border-top: 0.75pt solid #cbd4cf;
+        color: #68756f;
+        font-size: 7pt;
+        text-align: right;
+      }
+    }
+
+    /* Correções estáticas: medidas comuns às camadas e contenção responsiva. */
+    :root { color-scheme: dark; }
+    [hidden] { display: none !important; }
+    button, input, textarea, select { font-family: inherit; line-height: 1.6; }
+    button { min-height: 28px; cursor: pointer; font-weight: 500; }
+    button:active { filter: brightness(1.2); }
+    button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .sidebar-brand { flex-wrap: wrap; gap: 6px; }
+    .sidebar-title { min-width: 0; }
+    .sidebar-title span:last-child { overflow-wrap: anywhere; }
+    .disc-name, .topico-item, .search-input, .field-label { font-size: 15px; }
+    .field-label { display: block; }
+    .disc-title-wrap, .topico-name { border: 0; background: transparent; color: inherit; text-align: left; padding: 0; }
+    .topico-name { font-size: inherit; }
+    .item-actions { flex-shrink: 0; }
+    .disc-header:focus-within .item-actions, .topico-item:focus-within .item-actions { opacity: 1; }
+    .content-container, .func-card, .field, .code-block-wrapper { min-width: 0; }
+    .input-title { font-family: inherit; line-height: 1.6; resize: vertical; field-sizing: content; min-height: 3.2em; overflow-wrap: anywhere; }
+    .textarea-general { font-size: 16px; }
+    .textarea-detalhes { font-size: 14px; line-height: 1.6; }
+    .section-header, .blocks-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .code-toolbar { flex-wrap: wrap; gap: 10px; }
+    .code-toolbar-left { flex-wrap: wrap; }
+    .code-toolbar-right { flex-wrap: wrap; gap: 8px; }
+    .pill-btn { border-color: var(--accent); font-weight: 500; }
+    .pill-btn.btn-run { font-weight: 500; }
+    .copiado { color: var(--success); }
+    .btn-add-block { width: auto; padding: 2px 8px; border: 1px solid var(--border-color); }
+    .editor-hint { font-size: 11px; color: var(--text-muted); }
+    .editor-container:focus-within { outline: 1px solid var(--accent); outline-offset: -1px; }
+    .code-highlight-layer, .code-textarea { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; font-weight: 400; font-size: 14px; line-height: 1.6; padding: 12px 14px; white-space: pre-wrap; word-wrap: break-word; word-break: break-word; tab-size: 4; scrollbar-gutter: stable; overflow-y: scroll; }
+    .code-highlight-layer { z-index: 0; }
+    .code-textarea { z-index: 1; }
+    .output-panel { overflow: auto; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .output-summary { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .sidebar-empty, .functions-empty { padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 14px; }
+    .functions-empty { border: 1px dashed var(--border-color); border-radius: 8px; }
+    .toast { position: fixed; bottom: 20px; right: 20px; max-width: min(420px, calc(100vw - 40px)); padding: 12px 16px; border: 1px solid var(--accent); border-radius: 8px; background: var(--bg-panel-alt); color: var(--text-main); z-index: 10; }
+    @media (hover: none) { .item-actions { opacity: 1; } }
+    @media (max-width: 640px) {
+      body { flex-direction: column; height: 100dvh; }
+      .sidebar { width: 100%; height: 40dvh; min-height: 240px; border-right: 0; border-bottom: 1px solid var(--border-color); }
+      .sidebar-header { padding: 8px 12px; }
+      .sidebar-brand { margin-bottom: 4px; }
+      .sidebar-footer { padding: 6px 12px; gap: 4px; }
+      .main { height: auto; min-height: 0; }
+      .content-container { padding: 20px 12px 60px; }
+      .code-toolbar { padding: 6px 8px; }
+      .code-toolbar-right { gap: 4px; }
+      .func-card { padding: 18px; }
+      .input-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-title">
+          <span>📘</span>
+          <span>Anotações Gerais — Curso ADS</span>
+        </div>
+        <span id="saveStatus" class="save-indicator">Salvo ✓</span>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="sidebarSearch" aria-label="Buscar no caderno" 
+          class="search-input" 
+          placeholder="Buscar comandos, notas..."
+          data-input-action="pesquisar" 
+        >
+      </div>
+    </div>
+
+    <div class="sidebar-tree" id="sidebarTree">
+      <!-- Preenchido via renderSidebar() -->
+    </div>
+
+    <div class="sidebar-footer">
+      <button type="button" class="btn-new-disc" onclick="window.cadernoAcao('novaDisciplina')">
+        <span>+</span>
+        <span>Nova disciplina</span>
+      </button>
+      <div class="sidebar-tools-row">
+        <button type="button" class="btn-tool" onclick="window.cadernoAcao('exportarJson')" title="Baixar cópia de segurança em JSON">
+          ⬇ Exportar
+        </button>
+        <button type="button" class="btn-tool" onclick="window.cadernoAcao('abrirImportacao')" title="Carregar caderno de arquivo JSON">
+          ⬆ Importar
+        </button>
+        <input type="file" id="importFileInput" accept=".json" hidden onchange="window.cadernoAcao('importarJson', event)">
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEW -->
+  <main class="main" id="mainContent">
+    <div class="content-container" id="topicContainer">
+      <!-- Preenchido dinamicamente via renderTopic() -->
+    </div>
+  </main>
+
+  <!-- Versão A4 montada sob demanda para impressão ou salvamento em PDF. -->
+  <article id="printDocument" class="print-document" aria-hidden="true"></article>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script>
+    /**
+     * CADERNO VIRTUAL DE AULAS - ADS
+     * Código sólido, auto-contido e defensivo
+     */
+
+    // Chave única de persistência local
+    window.cadernoAcao = async function(acao, ...ids) {
+      try { return await despacharAcao(acao, ...ids); }
+      catch (erro) { console.error('Ação falhou:', acao, erro); mostrarToast('Não foi possível concluir a ação.'); }
+    };
+
+    const STORAGE_KEY = 'cadernoVirtual';
+
+    // Estado da aplicação
+    let appState = {
+      disciplinas: [],
+      activeTopicId: null,
+      searchQuery: '',
+      collapsedDiscIds: Object.create(null),
+      outputs: Object.create(null) // Saídas temporárias, nunca persistidas junto às anotações.
+    };
+
+    // Gerador de ID seguro
+    function gerarId(prefixo) {
+      return (prefixo || 'id') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+    }
+
+    // Escape de HTML estrito (Pipeline passo 1)
+    function escapeHtml(str) {
+      str = String(str ?? '');
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Debounce para salvamento automático
+    let debounceTimer = null;
+    function agendarSalvamento() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        salvarDados();
+      }, 400);
+    }
+
+    function salvarDados() {
+      clearTimeout(debounceTimer); debounceTimer = null;
+      try {
+        const payload = {
+          disciplinas: appState.disciplinas, versao: 2
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        const statusEl = document.getElementById('saveStatus');
+        if (statusEl) {
+          statusEl.classList.add('visible');
+          setTimeout(() => statusEl.classList.remove('visible'), 1600);
+        }
+      } catch (err) {
+        console.error('Falha ao salvar no localStorage:', err);
+        mostrarToast('Não foi possível salvar. Exporte uma cópia JSON para proteger suas anotações.');
+      }
+    }
+
+    // Migração limitada aos registros antigos; entidades legítimas novas são preservadas.
+    function sanearCodigo(codigo) {
+      let limpo = codigo;
+      for (let i = 0; i < 4; i++) {
+        const anterior = limpo;
+        limpo = limpo.replace(/(?:<span\s+)?class=(?:&quot;|"|&#0?39;|')syn-[a-z-]*(?:&quot;|"|&#0?39;|')(?:&gt;|>)/g, '')
+          .replace(/<\/span>/g, '')
+          .replace(/&(amp|lt|gt|quot|#0?39);/g, (_, e) => ({amp:'&',lt:'<',gt:'>',quot:'"','#39':"'",'#039':"'"})[e]);
+        if (limpo === anterior) break;
+      }
+      return limpo;
+    }
+    function normalizarDados(dados, migrar = false) {
+      const ids = new Set(); let saneados = 0;
+      const array = v => Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : [];
+      const texto = v => v == null ? '' : String(v);
+      const id = v => {
+        let valor = typeof v === 'string' && /^[a-zA-Z0-9_-]+$/.test(v) && !ids.has(v) ? v : gerarId('id');
+        while (ids.has(valor)) valor = gerarId('id');
+        ids.add(valor); return valor;
+      };
+      const disciplinas = array(dados).map(d => ({id: id(d.id), nome: texto(d.nome), topicos: array(d.topicos).map(t => ({
+        id: id(t.id), titulo: texto(t.titulo), anotacoesGerais: texto(t.anotacoesGerais), funcoes: array(t.funcoes).map(f => ({
+          id: id(f.id), nome: texto(f.nome), paraQueServe: texto(f.paraQueServe), sintaxe: texto(f.sintaxe), anotacoesDetalhadas: texto(f.anotacoesDetalhadas),
+          blocos: array(f.blocos).map(b => {
+            const codigo = texto(b.codigo), limpo = migrar ? sanearCodigo(codigo) : codigo;
+            if (codigo !== limpo) saneados++;
+            return {id: id(b.id), codigo: limpo, linguagem: ['Auto','JavaScript','Python','SQL'].includes(b.linguagem) ? b.linguagem : 'Auto'};
+          })
+        }))
+      }))}));
+      if (saneados) console.info('Caderno: ' + saneados + ' bloco(s) saneado(s).');
+      return disciplinas;
+    }
+    function carregarDados() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const dados = Array.isArray(parsed) ? parsed : parsed?.disciplinas;
+          if (!Array.isArray(dados)) throw new Error('Estrutura inválida');
+          appState.disciplinas = normalizarDados(dados, parsed.versao !== 2);
+          if (JSON.stringify(dados) !== JSON.stringify(appState.disciplinas) || parsed.versao !== 2) salvarDados();
+        } else appState.disciplinas = [];
+      } catch (err) {
+        console.warn('Não foi possível carregar o caderno:', err);
+        mostrarToast('Não foi possível ler os dados salvos. Importe uma cópia JSON.');
+      }
+    }
+    let toastTimer;
+    function mostrarToast(texto) {
+      const el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = texto; el.hidden = false;
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 4000);
+    }
+
+    // Localiza objetos no estado defensivamente
+    function buscarTopicoPorId(topicoId) {
+      for (const disc of (appState.disciplinas || [])) {
+        for (const top of (disc.topicos || [])) {
+          if (top.id === topicoId) {
+            return { disciplina: disc, topico: top };
+          }
+        }
+      }
+      return null;
+    }
+
+    // Monta uma versão de leitura independente dos campos do editor.
+    function montarDocumentoPdf(disciplina, topico) {
+      const funcoes = Array.isArray(topico.funcoes) ? topico.funcoes : [];
+      const data = new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }).format(new Date());
+
+      const funcoesHtml = funcoes.length ? funcoes.map((fn, indice) => {
+        const blocos = Array.isArray(fn.blocos) ? fn.blocos : [];
+        const sintaxe = (fn.sintaxe || '').trim();
+        const detalhes = (fn.anotacoesDetalhadas || '').trim();
+        const blocosHtml = blocos.filter(bloco => (bloco.codigo || '').trim()).map((bloco, blocoIndice) => {
+          const codigo = bloco.codigo || '';
+          const linguagem = detectarLinguagem(codigo, bloco.linguagem || 'Auto');
+          return `
+            <div class="print-code-block">
+              <div class="print-code-header">${escapeHtml(linguagem)} · Exemplo ${String(blocoIndice + 1).padStart(2, '0')}</div>
+              <pre class="print-code"><code>${escapeHtml(codigo)}</code></pre>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <section class="print-function">
+            <header class="print-function-header">
+              <span class="print-function-number">${String(indice + 1).padStart(2, '0')}</span>
+              <div>
+                <h2 class="print-function-title">${escapeHtml(fn.nome || 'Função ou comando sem título')}</h2>
+                ${fn.paraQueServe ? `<p class="print-purpose">${escapeHtml(fn.paraQueServe)}</p>` : ''}
+              </div>
+            </header>
+            <div class="print-function-body">
+              ${sintaxe ? `
+                <div class="print-row">
+                  <span class="print-label">Sintaxe</span>
+                  <pre class="print-syntax"><code>${escapeHtml(sintaxe)}</code></pre>
+                </div>
+              ` : ''}
+              ${detalhes ? `
+                <div class="print-row">
+                  <span class="print-label">Notas</span>
+                  <p class="print-detail">${escapeHtml(detalhes)}</p>
+                </div>
+              ` : ''}
+            </div>
+            ${blocosHtml}
+          </section>
+        `;
+      }).join('') : '<p class="print-empty">Nenhuma função ou comando foi registrado nesta aula.</p>';
+
+      return `
+        <header class="print-header">
+          <div class="print-topline">
+            <span class="print-brand">Caderno Virtual de Aulas</span>
+            <span>${escapeHtml(data)}</span>
+          </div>
+          <h1 class="print-title">${escapeHtml(topico.titulo || 'Aula sem título')}</h1>
+          <p class="print-course">${escapeHtml(disciplina.nome || 'Sem disciplina')}</p>
+        </header>
+        ${topico.anotacoesGerais ? `
+          <section class="print-section">
+            <div class="print-section-heading">
+              <h2 class="print-section-title">Anotações da aula</h2>
+            </div>
+            <p class="print-notes">${escapeHtml(topico.anotacoesGerais)}</p>
+          </section>
+        ` : ''}
+        <section class="print-section">
+          <div class="print-section-heading">
+            <h2 class="print-section-title">Funções &amp; Comandos</h2>
+            <span class="print-section-count">${funcoes.length} ${funcoes.length === 1 ? 'registro' : 'registros'}</span>
+          </div>
+          ${funcoesHtml}
+        </section>
+        <footer class="print-footer">Caderno Virtual de Aulas · Material de estudo</footer>
+      `;
+    }
+
+    function gerarPdfDaAula(topicoId) {
+      const item = buscarTopicoPorId(topicoId);
+      const documento = document.getElementById('printDocument');
+      if (!item || !documento) {
+        mostrarToast('Selecione uma aula antes de gerar o PDF.');
+        return;
+      }
+
+      documento.innerHTML = montarDocumentoPdf(item.disciplina, item.topico);
+      documento.setAttribute('aria-hidden', 'false');
+      const tituloOriginal = document.title;
+      document.title = (item.topico.titulo || 'Aula') + ' — Caderno Virtual';
+
+      const finalizar = () => {
+        document.title = tituloOriginal;
+        documento.setAttribute('aria-hidden', 'true');
+      };
+      window.addEventListener('afterprint', finalizar, { once: true });
+
+      requestAnimationFrame(() => requestAnimationFrame(() => window.print()));
+    }
+
+    // Auto detecção de linguagem
+    function detectarLinguagem(codigo, langEscolhida) {
+      if (langEscolhida && langEscolhida !== 'Auto') {
+        return langEscolhida;
+      }
+      const trimmed = (codigo || '').trim();
+      const upper = trimmed.toUpperCase();
+
+      if (/^(SELECT|INSERT|CREATE|ALTER|DROP|UPDATE|DELETE|WITH)\b/.test(upper)) {
+        return 'SQL';
+      }
+      if (/(print\s*\(|def\s+\w+|import\s+\w+|elif\s+)/.test(trimmed)) {
+        return 'Python';
+      }
+      return 'JavaScript';
+    }
+
+    // Escapa uma única vez. O lexer nunca volta a processar os spans produzidos.
+    function realcarSintaxe(codigoPuro, linguagem) {
+      const seguro = escapeHtml(codigoPuro || '');
+      const keywords = {
+        SQL: 'SELECT FROM WHERE JOIN LEFT RIGHT INNER OUTER INSERT INTO VALUES UPDATE SET DELETE CREATE ALTER DROP TABLE GROUP BY ORDER HAVING AND OR NOT NULL INT TEXT VARCHAR PRIMARY KEY AS DISTINCT LIMIT DESC ASC WITH UNION',
+        Python: 'def return if elif else for while import from class try except finally with as in not and or None True False lambda pass break continue global',
+        JavaScript: 'function const let var if else for while return class import export new this typeof instanceof async await try catch finally throw switch case break true false null undefined'
+      };
+      const palavras = new Set((keywords[linguagem] || keywords.JavaScript).split(' '));
+      const comentarios = linguagem === 'Python' ? String.raw`#[^\n]*` : linguagem === 'SQL' ? String.raw`--[^\n]*|/\*[\s\S]*?(?:\*/|$)` : String.raw`//[^\n]*|/\*[\s\S]*?(?:\*/|$)`;
+      const strings = String.raw`&quot;(?:\\[\s\S]|(?!&quot;)[^\n])*?(?:&quot;|$)|&#39;(?:\\[\s\S]|(?!&#39;)[^\n])*?(?:&#39;|$)|\x60(?:\\[\s\S]|[^\x60])*\x60`;
+      const lexer = new RegExp('(' + comentarios + ')|(' + strings + ')|(&[a-z]+;|&#\\d+;)|(\\b\\d+(?:\\.\\d+)?\\b)|([a-zA-Z_$][\\w$]*)', 'g');
+      return seguro.replace(lexer, (token, comentario, string, entidade, numero, palavra, offset) => {
+        let classe = comentario ? 'com' : string ? 'str' : numero ? 'num' : '';
+        if (palavra) {
+          if (palavras.has(linguagem === 'SQL' ? palavra.toUpperCase() : palavra)) classe = 'kw';
+          else if (/^\s*\(/.test(seguro.slice(offset + token.length))) classe = 'fn';
+        }
+        return classe ? '<span class="syn-' + classe + '">' + token + '</span>' : token;
+      });
+    }
+
+    // Somente estes dois motores acessam a rede, depois de clicar em Executar.
+    const PYTHON_CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
+    const SQL_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/';
+    let pythonPromise, sqlPromise, pythonQueue = Promise.resolve();
+    const sqlDatabases = new Map();
+    const executando = new Set();
+    let runtimeGeneration = 0;
+    function carregarScript(url) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const timer = setTimeout(() => falhou(), 30000);
+        function falhou() {
+          clearTimeout(timer); script.remove();
+          reject(new Error('Não foi possível carregar o motor. Verifique a conexão ou permita o CDN no bloqueador e tente novamente.'));
+        }
+        script.src = url;
+        script.onload = () => { clearTimeout(timer); resolve(); };
+        script.onerror = falhou;
+        document.body.appendChild(script);
+      });
+    }
+    function carregarPython() {
+      if (!pythonPromise) pythonPromise = (async () => {
+        if (!window.loadPyodide) await carregarScript(PYTHON_CDN + 'pyodide.js');
+        window.cadernoPython = await window.loadPyodide({indexURL: PYTHON_CDN});
+        return window.cadernoPython;
+      })().catch(err => { pythonPromise = null; throw err; });
+      return pythonPromise;
+    }
+    function carregarSql() {
+      if (!sqlPromise) sqlPromise = (async () => {
+        if (!window.initSqlJs) await carregarScript(SQL_CDN + 'sql-wasm.js');
+        return window.initSqlJs({locateFile: file => SQL_CDN + file});
+      })().catch(err => { sqlPromise = null; throw err; });
+      return sqlPromise;
+    }
+    async function executarSqlLocal(blocoId, codigo, generation) {
+      const SQL = await carregarSql();
+      if (generation !== runtimeGeneration || !blocoExiste(blocoId)) return {content: ''};
+      if (!sqlDatabases.has(blocoId)) sqlDatabases.set(blocoId, new SQL.Database());
+      const tables = sqlDatabases.get(blocoId).exec(codigo);
+      return {tables, content: tables.length ? '' : '✓ Consulta executada com sucesso'};
+    }
+    function executarPythonLocal(codigo) {
+      // Serializa execuções para que stdout de dois blocos nunca se misture.
+      const job = pythonQueue.then(async () => {
+        const py = await carregarPython();
+        const logs = [];
+        py.setStdout({batched: texto => logs.push(texto)});
+        py.setStderr({batched: texto => logs.push(texto)});
+        const globals = py.toPy({});
+        try {
+          const result = await py.runPythonAsync(codigo, {globals});
+          if (result && typeof result.destroy === 'function') result.destroy();
+          py.runPython('import sys; sys.stdout.flush(); sys.stderr.flush()');
+          return {content: logs.join('\n') || '✓ Código executado sem saída.'};
+        } catch (err) {
+          py.runPython('import sys; sys.stdout.flush(); sys.stderr.flush()');
+          return {content: [...logs, String(err)].join('\n'), isError: true};
+        } finally { globals.destroy(); py.setStdout({}); py.setStderr({}); }
+      });
+      pythonQueue = job.catch(() => {});
+      return job;
+    }
+    function blocoExiste(id) {
+      return appState.disciplinas.some(d => d.topicos.some(t => t.funcoes.some(f => f.blocos.some(b => b.id === id))));
+    }
+    function limparRecursos() {
+      for (const [id, db] of sqlDatabases) if (!blocoExiste(id)) { db.close(); sqlDatabases.delete(id); }
+      for (const id of Object.keys(appState.outputs)) if (!blocoExiste(id)) delete appState.outputs[id];
+    }
+    async function executarBloco(blocoId, linguagem) {
+      if (executando.has(blocoId)) return;
+      const ta = document.getElementById('code_ta_' + blocoId);
+      if (!ta) return;
+      const codigo = ta.value, lang = detectarLinguagem(codigo, linguagem), generation = runtimeGeneration;
+      executando.add(blocoId);
+      const mostrar = res => {
+        if (generation === runtimeGeneration && blocoExiste(blocoId)) {
+          appState.outputs[blocoId] = res;
+          renderOutputPanel(blocoId, res);
+        }
+      };
+      mostrar({content: lang === 'Python' ? '🐍 Carregando Python... / Executando' : lang === 'SQL' ? 'Carregando SQL... / Executando' : 'Executando...', pending: true});
+      try {
+        mostrar(lang === 'Python' ? await executarPythonLocal(codigo) : lang === 'SQL' ? await executarSqlLocal(blocoId, codigo, generation) : executarJavaScriptLocal(codigo));
+      } catch (err) {
+        mostrar({isError: true, content: 'Falha ao executar ' + lang + ':\n' + String(err.message || err) + '\nSe o motor não carregou, verifique a conexão e o bloqueador de conteúdo e tente novamente.'});
+      } finally { executando.delete(blocoId); }
+    }
+
+    function executarJavaScriptLocal(codigoJs) {
+      const logs = [];
+      let temErro = false;
+      const formatar = valor => {
+        if (typeof valor !== 'object' || valor === null) return String(valor);
+        try { return JSON.stringify(valor, null, 2); }
+        catch (_) { return String(valor); }
+      };
+      const fakeConsole = {
+        log: (...args) => logs.push(args.map(formatar).join(' ')),
+        warn: (...args) => logs.push('⚠️ [Aviso] ' + args.map(formatar).join(' ')),
+        error: (...args) => { temErro = true; logs.push('❌ [Erro] ' + args.map(formatar).join(' ')); },
+        info: (...args) => logs.push('ℹ️ ' + args.map(formatar).join(' '))
+      };
+
+      try {
+        const runFn = new Function('console', codigoJs);
+        runFn(fakeConsole);
+        if (logs.length === 0) {
+          return { content: '✓ Código executado sem saídas de console.', isError: false };
+        }
+        return { content: logs.join('\n'), isError: temErro };
+      } catch (err) {
+        return { content: logs.concat('Erro de Execução (JS):\n' + (err?.stack || err?.message || String(err))).join('\n'), isError: true };
+      }
+    }
+
+    // Despachante global de ações: window.cadernoAcao (REGRA 6)
+    async function despacharAcao(acao, ...args) {
+      try {
+        switch (acao) {
+          case 'selecionarTopico': {
+            const [topicoId] = args;
+            appState.activeTopicId = topicoId;
+            renderAll();
+            break;
+          }
+
+          case 'toggleDisciplina': {
+            const [discId] = args;
+            appState.collapsedDiscIds[discId] = !appState.collapsedDiscIds[discId];
+            renderSidebar();
+            break;
+          }
+
+          case 'novaDisciplina': {
+            const nome = prompt('Nome da nova disciplina:');
+            if (nome && nome.trim()) {
+              const nova = {
+                id: gerarId('disc'),
+                nome: nome.trim(),
+                topicos: []
+              };
+              appState.disciplinas.push(nova);
+              agendarSalvamento();
+              renderAll();
+            }
+            break;
+          }
+
+          case 'removerDisciplina': {
+            const [discId] = args;
+            if (confirm('Tem certeza que deseja excluir esta disciplina e todas as suas aulas?')) {
+              appState.disciplinas = appState.disciplinas.filter(d => d.id !== discId);
+              // Se o tópico ativo estava nesta disciplina, limpar ou selecionar outro
+              if (buscarTopicoPorId(appState.activeTopicId) === null) {
+                appState.activeTopicId = null;
+              }
+              limparRecursos(); salvarDados(); mostrarToast('Item excluído.');
+              renderAll();
+            }
+            break;
+          }
+
+          case 'moverDisciplina': {
+            const [discId, direcao] = args;
+            const idx = appState.disciplinas.findIndex(d => d.id !== undefined && d.id === discId);
+            if (idx === -1) return;
+            const targetIdx = idx + direcao;
+            if (targetIdx >= 0 && targetIdx < appState.disciplinas.length) {
+              const temp = appState.disciplinas[idx];
+              appState.disciplinas[idx] = appState.disciplinas[targetIdx];
+              appState.disciplinas[targetIdx] = temp;
+              agendarSalvamento();
+              renderSidebar();
+            }
+            break;
+          }
+
+          case 'novoTopico': {
+            const [discId] = args;
+            const disc = appState.disciplinas.find(d => d.id === discId);
+            if (!disc) return;
+            const titulo = prompt('Título da nova aula/tópico:', 'Nova Aula');
+            if (titulo && titulo.trim()) {
+              const novo = {
+                id: gerarId('top'),
+                titulo: titulo.trim(),
+                anotacoesGerais: '',
+                funcoes: []
+              };
+              if (!disc.topicos) disc.topicos = [];
+              disc.topicos.push(novo);
+              appState.activeTopicId = novo.id;
+              appState.collapsedDiscIds[discId] = false;
+              agendarSalvamento();
+              renderAll();
+            }
+            break;
+          }
+
+          case 'removerTopico': {
+            const [topicoId] = args;
+            if (confirm('Deseja excluir esta aula e todo seu conteúdo?')) {
+              for (const d of appState.disciplinas) {
+                if (d.topicos) {
+                  d.topicos = d.topicos.filter(t => t.id !== topicoId);
+                }
+              }
+              if (appState.activeTopicId === topicoId) {
+                appState.activeTopicId = null;
+              }
+              limparRecursos(); salvarDados(); mostrarToast('Item excluído.');
+              renderAll();
+            }
+            break;
+          }
+
+          case 'moverTopico': {
+            const [discId, topicoId, direcao] = args;
+            const disc = appState.disciplinas.find(d => d.id === discId);
+            if (!disc || !disc.topicos) return;
+            const idx = disc.topicos.findIndex(t => t.id === topicoId);
+            if (idx === -1) return;
+            const targetIdx = idx + direcao;
+            if (targetIdx >= 0 && targetIdx < disc.topicos.length) {
+              const temp = disc.topicos[idx];
+              disc.topicos[idx] = disc.topicos[targetIdx];
+              disc.topicos[targetIdx] = temp;
+              agendarSalvamento();
+              renderSidebar();
+            }
+            break;
+          }
+
+          case 'atualizarTituloTopico': {
+            const [topicoId, novoTitulo] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item) {
+              item.topico.titulo = novoTitulo;
+              agendarSalvamento();
+              // Atualiza o texto na sidebar sem perder o foco
+              const sidebarNameEl = document.querySelector(`.topico-item[data-id="${topicoId}"] .topico-name`);
+              if (sidebarNameEl) {
+                sidebarNameEl.textContent = novoTitulo || 'Sem título';
+                sidebarNameEl.closest('.topico-item').title = novoTitulo || 'Sem título';
+              }
+            }
+            break;
+          }
+
+          case 'atualizarAnotacoesGerais': {
+            const [topicoId, valor] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item) {
+              item.topico.anotacoesGerais = valor;
+              agendarSalvamento();
+            }
+            break;
+          }
+
+          case 'adicionarFuncao': {
+            const [topicoId] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item) {
+              if (!item.topico.funcoes) item.topico.funcoes = [];
+              const novaFunc = {
+                id: gerarId('fn'),
+                nome: '',
+                paraQueServe: '',
+                sintaxe: '',
+                anotacoesDetalhadas: '',
+                blocos: [
+                  {
+                    id: gerarId('blk'),
+                    linguagem: 'Auto',
+                    codigo: ''
+                  }
+                ]
+              };
+              item.topico.funcoes.push(novaFunc);
+              agendarSalvamento();
+              renderTopic();
+            }
+            break;
+          }
+
+          case 'removerFuncao': {
+            const [topicoId, funcId] = args;
+            if (confirm('Tem certeza que deseja remover esta função/comando?')) {
+              const item = buscarTopicoPorId(topicoId);
+              if (item && item.topico.funcoes) {
+                item.topico.funcoes = item.topico.funcoes.filter(f => f.id !== funcId);
+                limparRecursos(); salvarDados(); mostrarToast('Item excluído.');
+                renderTopic();
+              }
+            }
+            break;
+          }
+
+          case 'moverFuncao': {
+            const [topicoId, funcId, direcao] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item && item.topico.funcoes) {
+              const idx = item.topico.funcoes.findIndex(f => f.id === funcId);
+              if (idx === -1) return;
+              const targetIdx = idx + direcao;
+              if (targetIdx >= 0 && targetIdx < item.topico.funcoes.length) {
+                const temp = item.topico.funcoes[idx];
+                item.topico.funcoes[idx] = item.topico.funcoes[targetIdx];
+                item.topico.funcoes[targetIdx] = temp;
+                agendarSalvamento();
+                renderTopic();
+              }
+            }
+            break;
+          }
+
+          case 'atualizarCampoFuncao': {
+            const [topicoId, funcId, campo, valor] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item && item.topico.funcoes) {
+              const fn = item.topico.funcoes.find(f => f.id === funcId);
+              if (fn) {
+                fn[campo] = valor;
+                agendarSalvamento();
+              }
+            }
+            break;
+          }
+
+          case 'adicionarBloco': {
+            const [topicoId, funcId] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item && item.topico.funcoes) {
+              const fn = item.topico.funcoes.find(f => f.id === funcId);
+              if (fn) {
+                if (!fn.blocos) fn.blocos = [];
+                fn.blocos.push({
+                  id: gerarId('blk'),
+                  linguagem: 'Auto',
+                  codigo: ''
+                });
+                agendarSalvamento();
+                renderTopic();
+              }
+            }
+            break;
+          }
+
+          case 'removerBloco': {
+            const [topicoId, funcId, blocoId] = args;
+            if (confirm('Excluir este bloco de código?')) {
+              const item = buscarTopicoPorId(topicoId);
+              if (item && item.topico.funcoes) {
+                const fn = item.topico.funcoes.find(f => f.id === funcId);
+                if (fn && fn.blocos) {
+                  fn.blocos = fn.blocos.filter(b => b.id !== blocoId);
+                  limparRecursos(); salvarDados(); mostrarToast('Item excluído.');
+                  renderTopic();
+                }
+              }
+            }
+            break;
+          }
+
+          case 'atualizarLinguagemBloco': {
+            const [topicoId, funcId, blocoId, novaLang] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item && item.topico.funcoes) {
+              const fn = item.topico.funcoes.find(f => f.id === funcId);
+              if (fn && fn.blocos) {
+                const blk = fn.blocos.find(b => b.id === blocoId);
+                if (blk) {
+                  blk.linguagem = novaLang;
+                  agendarSalvamento();
+                  // Re-renderiza o highlight
+                  atualizarHighlightDoBloco(blocoId, blk.codigo, novaLang);
+                }
+              }
+            }
+            break;
+          }
+
+          case 'atualizarCodigoBloco': {
+            const [topicoId, funcId, blocoId, codigo] = args;
+            const item = buscarTopicoPorId(topicoId);
+            if (item && item.topico.funcoes) {
+              const fn = item.topico.funcoes.find(f => f.id === funcId);
+              if (fn && fn.blocos) {
+                const blk = fn.blocos.find(b => b.id === blocoId);
+                if (blk) {
+                  blk.codigo = codigo;
+                  agendarSalvamento();
+                  atualizarHighlightDoBloco(blocoId, codigo, blk.linguagem);
+                }
+              }
+            }
+            break;
+          }
+
+          case 'copiarCodigo': {
+            const [id, botao] = args;
+            const ta = document.getElementById('code_ta_' + id);
+            if (!ta) return;
+            try { await navigator.clipboard.writeText(ta.value); }
+            catch (_) {
+              const inicio = ta.selectionStart, fim = ta.selectionEnd;
+              ta.focus(); ta.select();
+              const ok = document.execCommand('copy');
+              ta.setSelectionRange(inicio, fim);
+              if (!ok) { mostrarToast('Selecione o código e copie com Ctrl+C.'); return; }
+            }
+            botao.textContent = '✓ Copiado!'; botao.classList.add('copiado');
+            clearTimeout(botao.copyTimer);
+            botao.copyTimer = setTimeout(() => { botao.textContent = '📋 Copiar'; botao.classList.remove('copiado'); }, 1500);
+            break;
+          }
+          case 'executarCodigo': return executarBloco(...args);
+          case 'abrirImportacao': document.getElementById('importFileInput').click(); break;
+          case 'moverBloco': {
+            const [topId, fnId, id, direcao] = args;
+            const fn = buscarTopicoPorId(topId)?.topico.funcoes.find(f => f.id === fnId);
+            if (!fn) return;
+            const pos = fn.blocos.findIndex(b => b.id === id), alvo = pos + direcao;
+            if (pos >= 0 && alvo >= 0 && alvo < fn.blocos.length) {
+              [fn.blocos[pos], fn.blocos[alvo]] = [fn.blocos[alvo], fn.blocos[pos]];
+              salvarDados(); renderTopic();
+            }
+            break;
+          }
+
+          case 'pesquisar': {
+            const [termo] = args;
+            appState.searchQuery = (termo || '').toLowerCase().trim();
+            renderSidebar();
+            break;
+          }
+
+          case 'gerarPdf': {
+            const [topicoId] = args;
+            gerarPdfDaAula(topicoId);
+            break;
+          }
+
+          case 'exportarJson': {
+            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({disciplinas: appState.disciplinas, versao: 2}, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute('href', dataStr);
+            downloadAnchor.setAttribute('download', 'caderno_virtual_ads_' + new Date().toISOString().slice(0, 10) + '.json');
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            break;
+          }
+
+          case 'importarJson': {
+            const [event] = args;
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            if (confirm('Importar substituirá os dados atuais. Deseja prosseguir com a importação?')) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                try {
+                  const imported = JSON.parse(e.target.result);
+                  if (Array.isArray(imported)) {
+                    appState.disciplinas = normalizarDados(imported, true);
+                  } else if (imported && imported.disciplinas && Array.isArray(imported.disciplinas)) {
+                    appState.disciplinas = normalizarDados(imported.disciplinas, imported.versao !== 2);
+                  } else {
+                    alert('Arquivo com estrutura inválida.');
+                    return;
+                  }
+                  runtimeGeneration++;
+                  for (const db of sqlDatabases.values()) db.close();
+                  sqlDatabases.clear(); appState.outputs = Object.create(null);
+                  appState.collapsedDiscIds = Object.create(null); appState.searchQuery = "";
+                  document.getElementById("sidebarSearch").value = "";
+                  appState.activeTopicId = null;
+                  for (const d of appState.disciplinas) {
+                    if (d.topicos && d.topicos.length > 0) {
+                      appState.activeTopicId = d.topicos[0].id;
+                      break;
+                    }
+                  }
+                  salvarDados();
+                  renderAll();
+                  alert('Caderno importado com sucesso!');
+                } catch (err) {
+                  alert('Erro ao processar arquivo JSON: ' + err.message);
+                }
+              };
+              reader.onerror = () => mostrarToast('Não foi possível ler o arquivo.');
+              reader.readAsText(file);
+            }
+            event.target.value = '';
+            break;
+          }
+
+          default:
+            console.warn('Ação não reconhecida:', acao);
+        }
+      } catch (err) {
+        console.error('Erro ao executar cadernoAcao [' + acao + ']:', err);
+        mostrarToast('Não foi possível concluir a ação.');
+      }
+    };
+
+    // Atualização segura do highlight element
+    function atualizarHighlightDoBloco(blocoId, codigo, linguagemConfig) {
+      const preEl = document.getElementById('code_pre_' + blocoId);
+      if (preEl) {
+        const lang = detectarLinguagem(codigo, linguagemConfig);
+        preEl.innerHTML = realcarSintaxe(codigo, lang) + '\n';
+        const ta = document.getElementById('code_ta_' + blocoId);
+        if (ta) { preEl.scrollTop = ta.scrollTop; preEl.scrollLeft = ta.scrollLeft; }
+      }
+    }
+
+    // Renderiza painel de saída de execução
+    function renderOutputPanel(blocoId, res) {
+      const container = document.getElementById('output_box_' + blocoId);
+      if (!container || !res) return;
+      container.hidden = false;
+      container.setAttribute('aria-busy', String(!!res.pending));
+      const estado = res.isError ? 'error' : res.pending ? 'pending' : 'success';
+      let html = '<div class="output-title">Saída — ' + (res.pending ? 'Aguarde' : res.isError ? 'Erro' : 'Concluído') + '</div>';
+      for (const table of res.tables || []) {
+        html += '<div class="table-scroll"><table class="sql-table"><thead><tr>' + table.columns.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr></thead><tbody>' + table.values.map(row => '<tr>' + row.map(v => '<td>' + escapeHtml(v === null ? 'NULL' : v) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div><p class="output-summary">' + table.values.length + ' linhas retornadas</p>';
+      }
+      html += '<div class="output-content ' + estado + '">' + escapeHtml(res.content || '') + '</div>';
+      container.innerHTML = html;
+      anexarInputs(container);
+    }
+
+    // Configuração de eventos do editor (Tab, Shift+Tab, Ctrl+Enter, Scroll sync)
+    function anexarEventosEditor(textarea, blocoId, topicoId, funcId, langSelect) {
+      const preEl = document.getElementById('code_pre_' + blocoId);
+
+      // Sincronização estrita de scroll
+      textarea.addEventListener('scroll', () => {
+        if (preEl) {
+          preEl.scrollTop = textarea.scrollTop;
+          preEl.scrollLeft = textarea.scrollLeft;
+        }
+      });
+
+      // Teclas especiais (Tab, Shift+Tab, Ctrl+Enter)
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = textarea.selectionStart, end = textarea.selectionEnd, val = textarea.value;
+          if (!e.shiftKey && start === end) {
+            textarea.setRangeText('    ', start, end, 'end');
+          } else {
+            const lineStart = val.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+            const realStart = start === 0 ? 0 : lineStart;
+            const last = end > start && val[end - 1] === '\n' ? end - 1 : end;
+            let lineEnd = val.indexOf('\n', last);
+            if (lineEnd === -1) lineEnd = val.length;
+            const lines = val.slice(realStart, lineEnd).split('\n');
+            let delta = 0, firstDelta = 0;
+            const replacement = lines.map((line, i) => {
+              const remove = e.shiftKey ? (line.match(/^(?: {1,4}|\t)/) || [''])[0].length : 0;
+              const change = e.shiftKey ? -remove : 4;
+              delta += change; if (!i) firstDelta = change;
+              return e.shiftKey ? line.slice(remove) : '    ' + line;
+            }).join('\n');
+            textarea.setRangeText(replacement, realStart, lineEnd, 'preserve');
+            textarea.setSelectionRange(Math.max(realStart, start + firstDelta), Math.max(realStart, end + delta));
+          }
+          textarea.dispatchEvent(new Event('input', {bubbles: true}));
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          const lang = langSelect ? langSelect.value : 'Auto';
+          window.cadernoAcao('executarCodigo', blocoId, lang);
+        }
+      });
+    }
+
+    // Renderização da Sidebar com filtro
+    function renderSidebar() {
+      const container = document.getElementById('sidebarTree');
+      if (!container) return;
+
+      const q = appState.searchQuery;
+      let html = '';
+
+      (appState.disciplinas || []).forEach((disc, dIdx) => {
+        const discId = disc.id || ('disc_' + dIdx);
+        const discNome = disc.nome || 'Disciplina sem título';
+        const isCollapsed = !q && !!appState.collapsedDiscIds[discId];
+
+        // Filtro em nível de tópicos e conteúdo
+        const topicosFiltrados = (disc.topicos || []).filter(top => {
+          if (!q || discNome.toLowerCase().includes(q)) return true;
+          const matchTitulo = (top.titulo || '').toLowerCase().includes(q);
+          const matchAnotacoes = (top.anotacoesGerais || '').toLowerCase().includes(q);
+          const matchFuncoes = (top.funcoes || []).some(fn => {
+            return (fn.nome || '').toLowerCase().includes(q) ||
+                   (fn.paraQueServe || '').toLowerCase().includes(q) ||
+                   (fn.sintaxe || '').toLowerCase().includes(q) ||
+                   (fn.anotacoesDetalhadas || '').toLowerCase().includes(q);
+          });
+          return matchTitulo || matchAnotacoes || matchFuncoes;
+        });
+
+        // Se estiver buscando e não houver correspondência, oculta o card
+        if (q && topicosFiltrados.length === 0 && !discNome.toLowerCase().includes(q)) {
+          return;
+        }
+
+        html += `
+          <div class="disc-group">
+            <div class="disc-header">
+              <button type="button" class="disc-title-wrap" title="${escapeHtml(discNome)}" aria-expanded="${!isCollapsed}" onclick="window.cadernoAcao('toggleDisciplina', '${escapeHtml(discId)}')">
+                <span class="disc-toggle">${isCollapsed ? '▶' : '▼'}</span>
+                <span class="disc-name">${escapeHtml(discNome)}</span>
+              </button>
+              <div class="item-actions" >
+                <button type="button" class="btn-action-icon" title="Mover para cima" onclick="window.cadernoAcao('moverDisciplina', '${escapeHtml(discId)}', -1)">↑</button>
+                <button type="button" class="btn-action-icon" title="Mover para baixo" onclick="window.cadernoAcao('moverDisciplina', '${escapeHtml(discId)}', 1)">↓</button>
+                <button type="button" class="btn-action-icon danger" title="Excluir disciplina" onclick="window.cadernoAcao('removerDisciplina', '${escapeHtml(discId)}')">✕</button>
+              </div>
+            </div>
+
+            <div class="disc-topics" ${isCollapsed ? 'hidden' : ''}>
+        `;
+
+        topicosFiltrados.forEach((topico, tIdx) => {
+          const topId = topico.id || ('top_' + tIdx);
+          const topTitulo = topico.titulo || 'Aula sem título';
+          const isActive = (topId === appState.activeTopicId);
+
+          html += `
+            <div 
+              class="topico-item ${isActive ? 'active' : ''}" 
+              data-id="${escapeHtml(topId)}"
+
+              title="${escapeHtml(topTitulo)}"
+            >
+              <button type="button" class="topico-name" onclick="window.cadernoAcao('selecionarTopico', '${escapeHtml(topId)}')">${escapeHtml(topTitulo)}</button>
+              <div class="item-actions" >
+                <button type="button" class="btn-action-icon" title="Mover aula acima" onclick="window.cadernoAcao('moverTopico', '${escapeHtml(discId)}', '${escapeHtml(topId)}', -1)">↑</button>
+                <button type="button" class="btn-action-icon" title="Mover aula abaixo" onclick="window.cadernoAcao('moverTopico', '${escapeHtml(discId)}', '${escapeHtml(topId)}', 1)">↓</button>
+                <button type="button" class="btn-action-icon danger" title="Excluir aula" onclick="window.cadernoAcao('removerTopico', '${escapeHtml(topId)}')">✕</button>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+              <button type="button" class="btn-ghost-topico" onclick="window.cadernoAcao('novoTopico', '${escapeHtml(discId)}')">
+                + Nova aula
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      if (!html) {
+        html = `
+          <div class="sidebar-empty">
+            ${q ? 'Nenhum resultado encontrado para a busca.' : 'Crie uma disciplina para começar.'}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+      anexarInputs(container);
+    }
+
+    // Renderização do Tópico Ativo na Área Principal
+    function renderTopic() {
+      const container = document.getElementById('topicContainer');
+      if (!container) return;
+
+      const item = buscarTopicoPorId(appState.activeTopicId);
+
+      if (!item) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📖</div>
+            <h3>Nenhuma aula selecionada</h3>
+            <p>Selecione uma aula no menu lateral ou crie uma nova para começar suas anotações.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const { topico, disciplina } = item;
+      const topId = topico.id;
+
+      let html = `
+        <!-- Cabeçalho do Tópico -->
+        <div class="field">
+          <label class="field-label">${escapeHtml(disciplina.nome || 'Disciplina')} / TÍTULO DA AULA</label>
+          <textarea class="input-title" rows="3" placeholder="ex: Aula 01 — Introdução aos Algoritmos" data-input-action="atualizarTituloTopico" data-arg0="${escapeHtml(topId)}"
+          >${escapeHtml(topico.titulo || '')}</textarea>
+        </div>
+
+        <!-- Anotações Gerais -->
+        <div class="field">
+          <label class="field-label">Anotações Gerais da Aula</label>
+          <textarea 
+            class="textarea-general" 
+            placeholder="Resumo dos conceitos principais, lembretes de prova, observações do professor..."
+            data-input-action="atualizarAnotacoesGerais" data-arg0="${escapeHtml(topId)}"
+          >${escapeHtml(topico.anotacoesGerais || '')}</textarea>
+        </div>
+
+        <!-- Seção Funções & Comandos -->
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>⚡</span>
+            <span>Funções & Comandos</span>
+          </h2>
+          <div class="section-actions">
+            <button type="button" class="btn-pdf" onclick="window.cadernoAcao('gerarPdf', '${escapeHtml(topId)}')" title="Preparar esta aula para salvar como PDF">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6M8 15h8M8 18h5"></path></svg>
+              <span>Gerar PDF</span>
+            </button>
+            <button type="button" class="btn-add-func" onclick="window.cadernoAcao('adicionarFuncao', '${escapeHtml(topId)}')">
+              <span>+</span>
+              <span>Adicionar função/comando</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Renderização das Funções
+      const funcoes = topico.funcoes || [];
+      if (funcoes.length === 0) {
+        html += `
+          <div class="functions-empty">
+            Nenhuma função ou comando cadastrado para esta aula ainda.<br>
+            Clique no botão <strong>"+ Adicionar função/comando"</strong> acima para registrar sintaxes, explicações e testes práticos.
+          </div>
+        `;
+      } else {
+        funcoes.forEach((fn, fIdx) => {
+          const fnId = fn.id || ('fn_' + fIdx);
+
+          html += `
+            <div class="func-card">
+              <!-- Topo do Card -->
+              <div class="func-card-header">
+                <span class="func-card-tag">COMANDO #${fIdx + 1}</span>
+                <div class="func-card-actions">
+                  <button type="button" class="btn-action-icon" title="Mover acima" onclick="window.cadernoAcao('moverFuncao', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', -1)">↑</button>
+                  <button type="button" class="btn-action-icon" title="Mover abaixo" onclick="window.cadernoAcao('moverFuncao', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', 1)">↓</button>
+                  <button type="button" class="btn-action-icon danger" title="Remover função" onclick="window.cadernoAcao('removerFuncao', '${escapeHtml(topId)}', '${escapeHtml(fnId)}')">✕</button>
+                </div>
+              </div>
+
+              <!-- Campo 1: Nome da função -->
+              <div class="field">
+                <label class="field-label">Nome da função / comando</label>
+                <input 
+                  type="text" 
+                  class="input-func-text" 
+                  placeholder="ex: SELECT, Array.map, print(), etc."
+                  value="${escapeHtml(fn.nome || '')}"
+                  data-input-action="atualizarCampoFuncao" data-arg0="${escapeHtml(topId)}" data-arg1="${escapeHtml(fnId)}" data-arg2="nome"
+                >
+              </div>
+
+              <!-- Campo 2: Para que serve -->
+              <div class="field">
+                <label class="field-label">Para que serve</label>
+                <input 
+                  type="text" 
+                  class="input-func-text" 
+                  placeholder="ex: Filtra registros da tabela com base em predicados lógicos"
+                  value="${escapeHtml(fn.paraQueServe || '')}"
+                  data-input-action="atualizarCampoFuncao" data-arg0="${escapeHtml(topId)}" data-arg1="${escapeHtml(fnId)}" data-arg2="paraQueServe"
+                >
+              </div>
+
+              <!-- Campo 3: Sintaxe -->
+              <div class="field">
+                <label class="field-label">Sintaxe</label>
+                <input 
+                  type="text" 
+                  class="input-func-text input-mono" 
+                  placeholder="ex: SELECT coluna FROM tabela WHERE condicao;"
+                  value="${escapeHtml(fn.sintaxe || '')}"
+                  data-input-action="atualizarCampoFuncao" data-arg0="${escapeHtml(topId)}" data-arg1="${escapeHtml(fnId)}" data-arg2="sintaxe"
+                >
+              </div>
+
+              <!-- Campo 4: Anotações detalhadas -->
+              <div class="field">
+                <label class="field-label">Anotações detalhadas</label>
+                <textarea 
+                  class="textarea-detalhes" 
+                  placeholder="Detalhes sobre parâmetros, peculiaridades, armadilhas comuns e boas práticas..."
+                  data-input-action="atualizarCampoFuncao" data-arg0="${escapeHtml(topId)}" data-arg1="${escapeHtml(fnId)}" data-arg2="anotacoesDetalhadas"
+                >${escapeHtml(fn.anotacoesDetalhadas || '')}</textarea>
+              </div>
+
+              <!-- Campo 5: Blocos de Código -->
+              <div class="field">
+                <div class="blocks-heading">
+                  <label class="field-label">Blocos de Código & Testes</label>
+                  <button type="button" class="btn-action-icon btn-add-block" onclick="window.cadernoAcao('adicionarBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}')">
+                    + Bloco de código
+                  </button>
+                </div>
+          `;
+
+          const blocos = fn.blocos || [];
+          blocos.forEach((blk, bIdx) => {
+            const blkId = blk.id || ('blk_' + bIdx);
+            const lang = blk.linguagem || 'Auto';
+            const codigo = blk.codigo || '';
+
+            html += `
+              <div class="code-block-wrapper" id="block_wrap_${escapeHtml(blkId)}">
+                <div class="code-toolbar">
+                  <div class="code-toolbar-left">
+                    <select 
+                      id="code_lang_${escapeHtml(blkId)}" 
+                      class="code-lang-select" aria-label="Linguagem do código" 
+                      onchange="window.cadernoAcao('atualizarLinguagemBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', '${escapeHtml(blkId)}', this.value)"
+                    >
+                      <option value="Auto" ${lang === 'Auto' ? 'selected' : ''}>Auto</option>
+                      <option value="JavaScript" ${lang === 'JavaScript' ? 'selected' : ''}>JavaScript</option>
+                      <option value="Python" ${lang === 'Python' ? 'selected' : ''}>Python</option>
+                      <option value="SQL" ${lang === 'SQL' ? 'selected' : ''}>SQL</option>
+                    </select>
+                    <span class="editor-hint">Tab: 4 espaços | Ctrl+Enter: rodar</span>
+                  </div>
+                  <div class="code-toolbar-right">
+                    <button type="button" class="pill-btn" onclick="window.cadernoAcao('copiarCodigo', '${escapeHtml(blkId)}', this)">
+                      📋 Copiar
+                    </button>
+                    <button type="button" class="pill-btn btn-run" onclick="window.cadernoAcao('executarCodigo', '${escapeHtml(blkId)}', document.getElementById('code_lang_${escapeHtml(blkId)}').value)">
+                      ▶ Executar
+                    </button>
+                    <button type="button" class="btn-action-icon" title="Mover bloco acima" onclick="window.cadernoAcao('moverBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', '${escapeHtml(blkId)}', -1)">↑</button>
+                    <button type="button" class="btn-action-icon" title="Mover bloco abaixo" onclick="window.cadernoAcao('moverBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', '${escapeHtml(blkId)}', 1)">↓</button>
+                    <button type="button" class="btn-action-icon danger" title="Remover bloco" onclick="window.cadernoAcao('removerBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', '${escapeHtml(blkId)}')">
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Editor com camadas sobrepostas perfeitamente -->
+                <div class="editor-container">
+                  <pre id="code_pre_${escapeHtml(blkId)}" class="code-highlight-layer" aria-hidden="true">\n${realcarSintaxe(codigo, detectarLinguagem(codigo, lang))}\n</pre>
+                  <textarea 
+                    id="code_ta_${escapeHtml(blkId)}" 
+                    class="code-textarea" aria-label="Código do bloco" autocapitalize="off" autocomplete="off" 
+                    placeholder="Digite o código aqui..."
+                    spellcheck="false"
+                    data-input-action="atualizarCodigoBloco" data-arg0="${escapeHtml(topId)}" data-arg1="${escapeHtml(fnId)}" data-arg2="${escapeHtml(blkId)}"
+                  >\n${escapeHtml(codigo)}</textarea>
+                </div>
+
+                <!-- Painel de Saída de Execução -->
+                <div class="output-panel" id="output_box_${escapeHtml(blkId)}" ${appState.outputs[blkId] ? '' : 'hidden'} role="status"></div>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = html;
+      anexarInputs(container);
+
+      // Anexar sincronização e eventos para cada bloco renderizado
+      funcoes.forEach(fn => {
+        (fn.blocos || []).forEach(blk => {
+          const ta = document.getElementById('code_ta_' + blk.id);
+          const langSelect = document.getElementById('code_lang_' + blk.id);
+          if (ta) {
+            anexarEventosEditor(ta, blk.id, topId, fn.id, langSelect);
+          }
+          // Se já havia uma saída guardada, reexibe
+          if (appState.outputs[blk.id]) {
+            renderOutputPanel(blk.id, appState.outputs[blk.id]);
+          }
+        });
+      });
+    }
+
+    function anexarInputs(container) {
+      container.querySelectorAll('[data-input-action]').forEach(el => {
+        if (el.dataset.bound) return;
+        el.dataset.bound = 'true';
+        el.addEventListener('input', () => {
+          const ids = [];
+          for (let i = 0; el.hasAttribute('data-arg' + i); i++) ids.push(el.getAttribute('data-arg' + i));
+          window.cadernoAcao(el.dataset.inputAction, ...ids, el.value);
+        });
+      });
+      container.querySelectorAll('.field').forEach((field, i) => {
+        const label = field.querySelector(':scope > label'), input = field.querySelector(':scope > input, :scope > textarea');
+        if (label && input) { if (!input.id) input.id = 'campo_' + i; label.htmlFor = input.id; }
+      });
+    }
+
+    function renderAll() {
+      renderSidebar();
+      renderTopic();
+    }
+
+    // Conclui o debounce antes de recarregar ou sair da página.
+    window.addEventListener('pagehide', () => { if (debounceTimer) salvarDados(); });
+    window.addEventListener('beforeunload', () => { if (debounceTimer) salvarDados(); });
+
+    // Inicialização da aplicação
+    document.addEventListener('DOMContentLoaded', () => {
+      anexarInputs(document);
+      carregarDados();
+      renderAll();
+    });
+  </script>
+</body>
+</html>

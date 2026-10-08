@@ -1,0 +1,11 @@
+# Cópia local anterior à revisão
+index.original.html
+
+# Evidências e scripts locais de validação
+verificacao/
+verificacao-*.png
+
+# Arquivos temporários locais
+*.log
+.DS_Store
+Thumbs.db
