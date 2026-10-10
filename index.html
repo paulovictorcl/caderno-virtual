@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caderno Virtual de Aulas</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg">
   
 <style>
     :root {
@@ -1052,31 +1052,39 @@
       .input-title { font-size: 22px; }
     }
   </style>
+  <link rel="stylesheet" href="workspace.css">
 </head>
 <body>
+  <header class="mobile-bar">
+    <button type="button" id="navigationToggle" class="mobile-menu" aria-label="Abrir disciplinas" aria-expanded="false" aria-controls="studySidebar"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <span class="mobile-brand">Caderno Virtual</span>
+  </header>
+  <button type="button" id="navigationBackdrop" class="navigation-backdrop" aria-label="Fechar disciplinas" tabindex="-1" hidden></button>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="studySidebar" aria-label="Disciplinas e aulas">
     <div class="sidebar-header">
       <div class="sidebar-brand">
         <div class="sidebar-title">
-          <span>📘</span>
-          <span>Anotações Gerais — Curso ADS</span>
+          <span class="brand-mark"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 2 2 3 3 0 0 1 2-2h6v15h-6a3 3 0 0 0-2 2 3 3 0 0 0-2-2H4Z"/><path d="M12 6v15"/></svg></span>
+          <span class="brand-copy">Caderno Virtual<small>CURSO ADS · ESTUDOS</small></span>
         </div>
-        <span id="saveStatus" class="save-indicator">Salvo ✓</span>
+        <span id="saveStatus" class="save-indicator" role="status">Salvo</span>
+        <button type="button" class="sidebar-close" aria-label="Fechar disciplinas"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button>
       </div>
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg></span>
         <input 
           type="text" 
           id="sidebarSearch" aria-label="Buscar no caderno" 
           class="search-input" 
-          placeholder="Buscar comandos, notas..."
+          placeholder="Buscar no caderno…"
           data-input-action="pesquisar" 
         >
       </div>
     </div>
 
+    <div class="sidebar-caption">Suas disciplinas</div>
     <div class="sidebar-tree" id="sidebarTree">
       <!-- Preenchido via renderSidebar() -->
     </div>
@@ -1088,10 +1096,10 @@
       </button>
       <div class="sidebar-tools-row">
         <button type="button" class="btn-tool" onclick="window.cadernoAcao('exportarJson')" title="Baixar cópia de segurança em JSON">
-          ⬇ Exportar
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg> Exportar
         </button>
         <button type="button" class="btn-tool" onclick="window.cadernoAcao('abrirImportacao')" title="Carregar caderno de arquivo JSON">
-          ⬆ Importar
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 16v5h16v-5"/></svg> Importar
         </button>
         <input type="file" id="importFileInput" accept=".json" hidden onchange="window.cadernoAcao('importarJson', event)">
       </div>
@@ -1100,6 +1108,10 @@
 
   <!-- MAIN VIEW -->
   <main class="main" id="mainContent">
+    <div class="workspace-bar">
+      <span class="workspace-label"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 2 2 3 3 0 0 1 2-2h6v15h-6a3 3 0 0 0-2 2 3 3 0 0 0-2-2H4Z"/><path d="M12 6v15"/></svg> Área de estudo</span>
+      <button type="button" id="readingToggle" class="reading-toggle" aria-pressed="false" hidden>Modo leitura</button>
+    </div>
     <div class="content-container" id="topicContainer">
       <!-- Preenchido dinamicamente via renderTopic() -->
     </div>
@@ -1109,6 +1121,19 @@
   <article id="printDocument" class="print-document" aria-hidden="true"></article>
 
   <div id="toast" class="toast" role="status" hidden></div>
+  <dialog id="studyDialog" class="study-dialog" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+    <form>
+      <p class="dialog-eyebrow">Caderno Virtual</p>
+      <h2 id="dialogTitle"></h2>
+      <p id="dialogDescription" class="dialog-description"></p>
+      <input id="dialogInput" class="dialog-input" type="text" aria-labelledby="dialogTitle" autocomplete="off" maxlength="300">
+      <div class="dialog-actions">
+        <button type="button" id="dialogCancel" class="secondary-button">Cancelar</button>
+        <button type="submit" id="dialogConfirm" class="primary-button">Criar</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="workspace.js"></script>
   <script>
     /**
      * CADERNO VIRTUAL DE AULAS - ADS
@@ -1522,7 +1547,7 @@
           }
 
           case 'novaDisciplina': {
-            const nome = prompt('Nome da nova disciplina:');
+            const nome = await window.cadernoUI.dialog({ title: 'Nova disciplina', description: 'Organize suas aulas por matéria ou área de estudo.', value: '', confirmLabel: 'Criar disciplina' });
             if (nome && nome.trim()) {
               const nova = {
                 id: gerarId('disc'),
@@ -1538,7 +1563,7 @@
 
           case 'removerDisciplina': {
             const [discId] = args;
-            if (confirm('Tem certeza que deseja excluir esta disciplina e todas as suas aulas?')) {
+            if (await window.cadernoUI.dialog({ title: 'Excluir disciplina', description: 'Tem certeza que deseja excluir esta disciplina e todas as suas aulas?', confirmLabel: 'Excluir disciplina', destructive: true })) {
               appState.disciplinas = appState.disciplinas.filter(d => d.id !== discId);
               // Se o tópico ativo estava nesta disciplina, limpar ou selecionar outro
               if (buscarTopicoPorId(appState.activeTopicId) === null) {
@@ -1569,7 +1594,7 @@
             const [discId] = args;
             const disc = appState.disciplinas.find(d => d.id === discId);
             if (!disc) return;
-            const titulo = prompt('Título da nova aula/tópico:', 'Nova Aula');
+            const titulo = await window.cadernoUI.dialog({ title: 'Nova aula', description: 'Dê um título para encontrar suas anotações com facilidade.', value: '', confirmLabel: 'Criar aula' });
             if (titulo && titulo.trim()) {
               const novo = {
                 id: gerarId('top'),
@@ -1589,7 +1614,7 @@
 
           case 'removerTopico': {
             const [topicoId] = args;
-            if (confirm('Deseja excluir esta aula e todo seu conteúdo?')) {
+            if (await window.cadernoUI.dialog({ title: 'Excluir aula', description: 'Deseja excluir esta aula e todo seu conteúdo?', confirmLabel: 'Excluir aula', destructive: true })) {
               for (const d of appState.disciplinas) {
                 if (d.topicos) {
                   d.topicos = d.topicos.filter(t => t.id !== topicoId);
@@ -1675,7 +1700,7 @@
 
           case 'removerFuncao': {
             const [topicoId, funcId] = args;
-            if (confirm('Tem certeza que deseja remover esta função/comando?')) {
+            if (await window.cadernoUI.dialog({ title: 'Excluir comando', description: 'Tem certeza que deseja remover esta função/comando?', confirmLabel: 'Excluir comando', destructive: true })) {
               const item = buscarTopicoPorId(topicoId);
               if (item && item.topico.funcoes) {
                 item.topico.funcoes = item.topico.funcoes.filter(f => f.id !== funcId);
@@ -1738,7 +1763,7 @@
 
           case 'removerBloco': {
             const [topicoId, funcId, blocoId] = args;
-            if (confirm('Excluir este bloco de código?')) {
+            if (await window.cadernoUI.dialog({ title: 'Excluir bloco', description: 'Excluir este bloco de código?', confirmLabel: 'Excluir bloco', destructive: true })) {
               const item = buscarTopicoPorId(topicoId);
               if (item && item.topico.funcoes) {
                 const fn = item.topico.funcoes.find(f => f.id === funcId);
@@ -1799,9 +1824,9 @@
               ta.setSelectionRange(inicio, fim);
               if (!ok) { mostrarToast('Selecione o código e copie com Ctrl+C.'); return; }
             }
-            botao.textContent = '✓ Copiado!'; botao.classList.add('copiado');
+            botao.innerHTML = window.cadernoUI.icon('check') + ' Copiado'; botao.classList.add('copiado');
             clearTimeout(botao.copyTimer);
-            botao.copyTimer = setTimeout(() => { botao.textContent = '📋 Copiar'; botao.classList.remove('copiado'); }, 1500);
+            botao.copyTimer = setTimeout(() => { botao.innerHTML = window.cadernoUI.icon('copy') + ' Copiar'; botao.classList.remove('copiado'); }, 1500);
             break;
           }
           case 'executarCodigo': return executarBloco(...args);
@@ -1847,7 +1872,7 @@
             const file = event.target.files && event.target.files[0];
             if (!file) return;
 
-            if (confirm('Importar substituirá os dados atuais. Deseja prosseguir com a importação?')) {
+            if (await window.cadernoUI.dialog({ title: 'Substituir caderno', description: 'Importar substituirá os dados atuais. Deseja prosseguir com a importação?', confirmLabel: 'Substituir caderno', destructive: true })) {
               const reader = new FileReader();
               reader.onload = (e) => {
                 try {
@@ -1857,7 +1882,7 @@
                   } else if (imported && imported.disciplinas && Array.isArray(imported.disciplinas)) {
                     appState.disciplinas = normalizarDados(imported.disciplinas, imported.versao !== 2);
                   } else {
-                    alert('Arquivo com estrutura inválida.');
+                    mostrarToast('Arquivo com estrutura inválida.');
                     return;
                   }
                   runtimeGeneration++;
@@ -1874,9 +1899,9 @@
                   }
                   salvarDados();
                   renderAll();
-                  alert('Caderno importado com sucesso!');
+                  mostrarToast('Caderno importado com sucesso.');
                 } catch (err) {
-                  alert('Erro ao processar arquivo JSON: ' + err.message);
+                  mostrarToast('Erro ao processar arquivo JSON: ' + err.message);
                 }
               };
               reader.onerror = () => mostrarToast('Não foi possível ler o arquivo.');
@@ -2057,6 +2082,7 @@
 
       container.innerHTML = html;
       anexarInputs(container);
+      window.cadernoUI.refresh(container);
     }
 
     // Renderização do Tópico Ativo na Área Principal
@@ -2069,11 +2095,13 @@
       if (!item) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">📖</div>
-            <h3>Nenhuma aula selecionada</h3>
-            <p>Selecione uma aula no menu lateral ou crie uma nova para começar suas anotações.</p>
+            <div class="empty-state-icon">${window.cadernoUI.icon('book')}</div>
+            <h3>${appState.disciplinas.length ? 'Seu próximo estudo começa aqui' : 'Um espaço para suas ideias'}</h3>
+            <p>${appState.disciplinas.length ? 'Escolha uma aula nas disciplinas para continuar suas anotações e exemplos de código.' : 'Organize disciplinas, registre conceitos e mantenha seus exemplos de código em um só lugar.'}</p>
+            <button type="button" class="primary-button" onclick="window.cadernoAcao('novaDisciplina')">Criar ${appState.disciplinas.length ? 'disciplina' : 'primeira disciplina'}</button>
           </div>
         `;
+        window.cadernoUI.refresh(container);
         return;
       }
 
@@ -2082,15 +2110,15 @@
 
       let html = `
         <!-- Cabeçalho do Tópico -->
-        <div class="field">
-          <label class="field-label">${escapeHtml(disciplina.nome || 'Disciplina')} / TÍTULO DA AULA</label>
-          <textarea class="input-title" rows="3" placeholder="ex: Aula 01 — Introdução aos Algoritmos" data-input-action="atualizarTituloTopico" data-arg0="${escapeHtml(topId)}"
+        <div class="field lesson-heading">
+          <label class="field-label">${escapeHtml(disciplina.nome || 'Disciplina')} / Aula</label>
+          <textarea class="input-title" rows="1" placeholder="ex: Aula 01 — Introdução aos Algoritmos" data-input-action="atualizarTituloTopico" data-arg0="${escapeHtml(topId)}"
           >${escapeHtml(topico.titulo || '')}</textarea>
         </div>
 
         <!-- Anotações Gerais -->
         <div class="field">
-          <label class="field-label">Anotações Gerais da Aula</label>
+          <label class="field-label">Anotações da aula</label>
           <textarea 
             class="textarea-general" 
             placeholder="Resumo dos conceitos principais, lembretes de prova, observações do professor..."
@@ -2101,7 +2129,7 @@
         <!-- Seção Funções & Comandos -->
         <div class="section-header">
           <h2 class="section-title">
-            <span>⚡</span>
+            ${window.cadernoUI.icon('code')}
             <span>Funções & Comandos</span>
           </h2>
           <div class="section-actions">
@@ -2111,7 +2139,7 @@
             </button>
             <button type="button" class="btn-add-func" onclick="window.cadernoAcao('adicionarFuncao', '${escapeHtml(topId)}')">
               <span>+</span>
-              <span>Adicionar função/comando</span>
+              <span>Adicionar comando</span>
             </button>
           </div>
         </div>
@@ -2222,10 +2250,10 @@
                   </div>
                   <div class="code-toolbar-right">
                     <button type="button" class="pill-btn" onclick="window.cadernoAcao('copiarCodigo', '${escapeHtml(blkId)}', this)">
-                      📋 Copiar
+                      ${window.cadernoUI.icon('copy')} Copiar
                     </button>
                     <button type="button" class="pill-btn btn-run" onclick="window.cadernoAcao('executarCodigo', '${escapeHtml(blkId)}', document.getElementById('code_lang_${escapeHtml(blkId)}').value)">
-                      ▶ Executar
+                      ${window.cadernoUI.icon('play')} Executar
                     </button>
                     <button type="button" class="btn-action-icon" title="Mover bloco acima" onclick="window.cadernoAcao('moverBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', '${escapeHtml(blkId)}', -1)">↑</button>
                     <button type="button" class="btn-action-icon" title="Mover bloco abaixo" onclick="window.cadernoAcao('moverBloco', '${escapeHtml(topId)}', '${escapeHtml(fnId)}', '${escapeHtml(blkId)}', 1)">↓</button>
@@ -2277,6 +2305,7 @@
           }
         });
       });
+      window.cadernoUI.refresh(container);
     }
 
     function anexarInputs(container) {
